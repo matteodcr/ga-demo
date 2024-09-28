@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - deploy-to-ec2
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - deploy-to-ec2
 
 jobs:
   test:
@@ -16,13 +21,41 @@ jobs:
       - name: Run tests
         run: npm test --watchAll
 
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:${{matrix.language}}"
+
   build:
-    needs: test
+    needs: [test, analyze]
     permissions:
       contents: read
       packages: write
-      attestations: write
-      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,9 +65,15 @@ jobs:
       - name: Build Docker Image
         run: docker build -t matteodcr/mgl869 .
       - name: Publish image to Docker Hub
-        run: docker push matteodcr/mgl869:latest
+        run: |
+          docker push matteodcr/mgl869:latest
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+            docker tag matteodcr/mgl869:latest matteodcr/mgl869:$VERSION
+            docker push matteodcr/mgl869:$VERSION
+          fi
 
-      # New steps for GitHub Packages
+      # Steps for GitHub Packages
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -50,6 +89,39 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}/mgl869:latest
             ghcr.io/${{ github.repository }}/mgl869:${{ github.sha }}
+
+  create-release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Generate changelog
+        run: |
+          echo "## What's Changed" > changelog.md
+          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s" >> changelog.md
+      - name: Update Release with Changelog
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./changelog.md
+          asset_name: changelog.md
+          asset_content_type: text/markdown
 
   deploy:
     needs: build
