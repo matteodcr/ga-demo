@@ -1,4 +1,19 @@
-FROM ubuntu:latest
-LABEL authors="mattd"
+# STEP 1: BUILD REACT APP
+FROM node:alpine3.18 as build
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
 
-ENTRYPOINT ["top", "-b"]
+# STEP 2: SERVER WITH NGINX
+FROM nginx:1.23-alpine
+WORKDIR /usr/share/nginx/html
+RUN rm -rf *
+COPY --from=build /app/build .
+EXPOSE 80
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
+
+
+
+
