@@ -90,7 +90,7 @@ jobs:
             ghcr.io/${{ github.repository }}/mgl869:latest
             ghcr.io/${{ github.repository }}/mgl869:${{ github.sha }}
 
-  create-release:
+  create--release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
