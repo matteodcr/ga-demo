@@ -4,52 +4,32 @@ import "@sakun/system.css";
 
 function App() {
   return (
-      <div className="App">
-        <Window title="System.css">
-          <div className="window-pane">
-            Hello world!
-          </div>
+    <div className="App" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Window title="Démonstration Github Actions" resizeDisabled={false} details={["MGL869", "ETS Montréal"]}>
+            <div className="window-pane" style={{ textAlign: 'center' }}>
+                <h2>Application déployée</h2>
+            </div>
         </Window>
+    </div>
+  );
+}
 
-        <Window title="Search" resizeDisabled>
-          <div className="modeless-dialog">
-            <FieldRow label="Find:" inputId="text_find" />
-            <ButtonRow />
+function Window({ title, children, resizeDisabled, details }) {
+  return (
+      <div className="window" style={{width: '30rem'}}>
+          <div className="title-bar">
+              <button aria-label="Close" className="close"></button>
+              <h1 className="title">{title}</h1>
+              <button aria-label="Resize" disabled={resizeDisabled} className={resizeDisabled ? "hidden" : ""}></button>
           </div>
-        </Window>
+          <div className="details-bar">
+              {details.map((detail, index) => (
+                  <span key={index}>{detail}</span>
+              ))}
+          </div>
+          <div className="separator"></div>
+          {children}
       </div>
-  );
-}
-
-function Window({ title, children, resizeDisabled }) {
-  return (
-      <div className="window" style={{ width: '30rem' }}>
-        <div className="title-bar">
-          <button aria-label="Close" className="close"></button>
-          <h1 className="title">{title}</h1>
-          <button aria-label="Resize" disabled={resizeDisabled} className={resizeDisabled ? "hidden" : ""}></button>
-        </div>
-        <div className="separator"></div>
-        {children}
-      </div>
-  );
-}
-
-function FieldRow({ label, inputId }) {
-  return (
-      <section className="field-row" style={{ justifyContent: 'flex-start' }}>
-        <label htmlFor={inputId} className="modeless-text">{label}</label>
-        <input id={inputId} type="text" style={{ width: '100%' }} placeholder="" />
-      </section>
-  );
-}
-
-function ButtonRow() {
-  return (
-      <section className="field-row" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn">Cancel</button>
-        <button className="btn" style={{ width: '95px' }}>Find</button>
-      </section>
   );
 }
 
