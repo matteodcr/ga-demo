@@ -26,5 +26,5 @@ jobs:
         run: docker pull matteodcr/mgl869
       - name: Delete Old Container
         run: docker rm -f reactContainer
-      - name: Run docker container
+      - name: Run Docker container
         run: docker run -d -p 3000:80 --name reactContainer matteodcr/mgl869
