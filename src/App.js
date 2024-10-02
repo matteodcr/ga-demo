@@ -7,7 +7,7 @@ function App() {
     <div className="App" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Window title="Démonstration Github Actions" resizeDisabled={false} details={["MGL869", "ETS Montréal"]}>
             <div className="window-pane" style={{ textAlign: 'center' }}>
-                <h2>Application déployée</h2>
+                <h2>Application déployée 😀</h2>
             </div>
         </Window>
     </div>
