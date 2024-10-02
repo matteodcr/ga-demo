@@ -1,6 +1,6 @@
 mgl869.decorsaire.me {
-    root * /usr/share/caddy
-    file_server
-    encode gzip
-    try_files {path} /index.html
+	root * /usr/share/caddy
+	file_server
+	encode gzip
+	try_files {path} /index.html
 }
