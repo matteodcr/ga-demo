@@ -100,4 +100,4 @@ jobs:
       - name: Delete Old Container
         run: docker rm -f reactContainer
       - name: Run Docker container
-        run: docker run -d -p 3000:80 --name reactContainer matteodcr/mgl869
+        run: docker run -d -p 80:80 -p 443:443 --name reactContainer matteodcr/mgl869
