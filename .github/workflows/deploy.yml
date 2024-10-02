@@ -1,28 +1,29 @@
-name: CICD
+name: CI/CD 🚀
 
+# Ce workflow se déclenche sur un push dans la branche 'deploy-to-ec2' ou un tag avec un numéro de version.
 on:
   push:
     branches:
       - deploy-to-ec2
-    tags:
-      - 'v*.*.*'
-  pull_request:
-    branches:
-      - deploy-to-ec2
+
+
 
 jobs:
   test:
+    # Cette tâche exécute les tests unitaires.
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Récupérer le code source 📥
         uses: actions/checkout@v3
-      - name: Install dependencies
+
+      - name: Installer les dépendances 🔧
         run: npm install
-      - name: Run tests
+
+      - name: Exécuter les tests 🧪
         run: npm test --watchAll
 
   analyze:
-    name: Analyze
+    name: Analyse de sécurité 🔍
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -32,39 +33,48 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript' ]
+        language: [ 'javascript' ] # Analyse du code JavaScript
 
     steps:
-      - name: Checkout repository
+      - name: Récupérer le dépôt 📥
         uses: actions/checkout@v3
 
-      - name: Initialize CodeQL
+      - name: Initialiser CodeQL ⚙️
+        # CodeQL est un outil d'analyse de sécurité statique
         uses: github/codeql-action/init@v2
         with:
           languages: ${{ matrix.language }}
 
-      - name: Autobuild
+      - name: Autobuild 🛠️
+        # Auto-construction du projet pour préparer l'analyse
         uses: github/codeql-action/autobuild@v2
 
-      - name: Perform CodeQL Analysis
+      - name: Effectuer l'analyse CodeQL 🔍
+        # Analyse de sécurité via CodeQL
         uses: github/codeql-action/analyze@v2
         with:
           category: "/language:${{matrix.language}}"
 
   build:
+    # Ce job dépend des tâches 'test' et 'analyze' et ne s'exécute que si elles réussissent.
     needs: [test, analyze]
     permissions:
       contents: read
       packages: write
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Récupérer le code source 📥
         uses: actions/checkout@v3
-      - name: Login to Docker Hub
+
+      - name: Connexion à Docker Hub 🔑
+        # Connexion à Docker Hub pour publier l'image Docker
         run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
-      - name: Build Docker Image
+
+      - name: Construire l'image Docker 🏗️
         run: docker build -t matteodcr/mgl869 .
-      - name: Publish image to Docker Hub
+
+      - name: Publier l'image sur Docker Hub 🐳
         run: |
           docker push matteodcr/mgl869:latest
           if [[ $GITHUB_REF == refs/tags/* ]]; then
@@ -73,15 +83,15 @@ jobs:
             docker push matteodcr/mgl869:$VERSION
           fi
 
-      # Steps for GitHub Packages
-      - name: Login to GitHub Container Registry
+      # Étapes pour GitHub Packages
+      - name: Connexion au GitHub Container Registry 🔑
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push image to GitHub Packages
+      - name: Construire et pousser l'image vers GitHub Packages 📦
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -90,14 +100,17 @@ jobs:
             ghcr.io/${{ github.repository }}/mgl869:latest
             ghcr.io/${{ github.repository }}/mgl869:${{ github.sha }}
 
-
   deploy:
+    # Le déploiement se fait après la construction de l'image.
     needs: build
     runs-on: aws-ec2
     steps:
-      - name: Pull image from Docker Hub
+      - name: Récupérer l'image depuis Docker Hub 📥
         run: docker pull matteodcr/mgl869
-      - name: Delete Old Container
+
+      - name: Supprimer l'ancien conteneur 🗑️
         run: docker rm -f reactContainer
-      - name: Run Docker container
+
+      - name: Lancer le conteneur Docker 🚀
+        # Exécution du nouveau conteneur sur le port 80 (HTTP) et 443 (HTTPS)
         run: docker run -d -p 80:80 -p 443:443 --name reactContainer matteodcr/mgl869

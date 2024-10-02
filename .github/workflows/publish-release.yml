@@ -1,18 +1,23 @@
-name: Publish release
+name: Publier une version 🚀
+# Ce workflow s'exécute lorsqu'un nouveau tag est poussé dans le dépôt
 on:
   push:
     tags:
-      - "*"
+      - "*" # Ce pattern correspond à tous les tags
+
 jobs:
-  publish:
-    name: Publish release
-    runs-on: ubuntu-latest
+  publier:
+    name: Publier une version 🚀
+    runs-on: ubuntu-latest # Le job tourne sur la dernière version d'Ubuntu
     permissions:
-      contents: write
+      contents: write # Permet d'écrire sur le contenu du dépôt
     steps:
-      - name: Checkout
+      - name: Récupérer le code source 📥
+        # Cette étape utilise l'action checkout pour cloner le dépôt
         uses: actions/checkout@v3
-      - name: Publish release
+
+      - name: Publier la release 📦
+        # Cette étape publie une nouvelle version basée sur le tag créé
         uses: ghalactic/github-release-from-tag@v5
         with:
-          generateReleaseNotes: "true"
+          generateReleaseNotes: "true" # Générer automatiquement les notes de version
