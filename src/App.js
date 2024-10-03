@@ -7,7 +7,7 @@ function App() {
       <div className="App" style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
           <Window title="Démonstration Github Actions" resizeDisabled={false} details={["MGL869", "ETS Montréal"]}>
               <div className="window-pane" style={{textAlign: 'center'}}>
-                  <h2>Application déployée 😀 </h2>
+                  <h2>Application déployée 😀 V1.0.0 </h2>
                   <button className="btn"
                           onClick={() => window.open('https://docs.google.com/presentation/d/1STOVP0HgICKIHltP38s8zkA1Lmuqv_yUC7WGiYXBnQE/edit?usp=sharing', '_blank')}
                           style={{margin: 10}}>Présentation
